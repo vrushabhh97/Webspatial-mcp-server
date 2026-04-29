@@ -46,8 +46,12 @@ app.get("/sse", async (req, res) => {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name === "list_webspatial_docs") {
       try {
-        const files = await fs.readdir(DOCS_DIR);
-        const markdownFiles = files.filter(f => f.endsWith('.md'));
+        // Add { recursive: true } to search inside all subfolders
+        const files = await fs.readdir(DOCS_DIR, { recursive: true });
+        
+        // Ensure we are only grabbing markdown files
+        const markdownFiles = files.filter(f => typeof f === 'string' && f.endsWith('.md'));
+        
         return { content: [{ type: "text", text: `Available files:\n${markdownFiles.join('\n')}` }] };
       } catch (error) {
         return { content: [{ type: "text", text: "Error reading docs directory." }], isError: true };
